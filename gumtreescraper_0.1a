@@ -14,13 +14,17 @@ import requests
 from bs4 import BeautifulSoup as BS
 import re
 
+# --------------------------- USER CONTROLS. CHANGE THESE PARAMETERS AS YOU WISH. SET THE DURATION YOU WANT THE CODE TO RUN FOR, EACH REFRESH INTERVAL AND THE KEYWORDS YOU SPECIFICALLY WANT TO LOOK FOR  ------------------------ #
+
 # User Controls
 how_long_for_hrs = 2
 interval_seconds = 11
 keywords = ['bike', 'scooter', 'tv', 'monitor', 'PC', 'computer']
-keywords_transformed = '|'.join(keywords)
+
 
 ### FUNCTION ###
+
+keywords_transformed = '|'.join(keywords)
 
 def gumtreescraper():
     # Obtaining the page info using BS
