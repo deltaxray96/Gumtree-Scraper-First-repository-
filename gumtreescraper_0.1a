@@ -1,0 +1,101 @@
+# Gumtree UK 'Freebies' Webscraper v0.1a
+""" This is the first attempt at my first webscraper made from scratch. This takes desired "keywords" to be searched
+for on Gumtree Freebies. If a search term was found, the title is returned. It will keep searching every so often,
+and this period can be defined in how_long_for_hrs and interval_seconds. I only have a small amount of coding
+experience, so there will almost certainly be bugs. Kind Regards.
+
+Version: 0.1a
+Date/Time: 20/7/24
+OS: Linux Mint Cinnamon 21.3"""
+
+# Imports
+import time
+import requests
+from bs4 import BeautifulSoup as BS
+import re
+
+# User Controls
+how_long_for_hrs = 2
+interval_seconds = 11
+keywords = ['bike', 'scooter', 'tv', 'monitor', 'PC', 'computer']
+keywords_transformed = '|'.join(keywords)
+
+### FUNCTION ###
+
+def gumtreescraper():
+    # Obtaining the page info using BS
+    url = 'https://www.gumtree.com/search?featured_filter=false&q=&search_location=Derby&search_category=freebies&distance=50&urgent_filter=false&sort=date&search_distance=50&search_scope=false&photos_filter=false'
+    agent = {"User-Agent":'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36'}
+    page = requests.get(url, headers=agent)
+    soup = BS(page.content, 'lxml')
+
+    # Obtaining advert titles and times by their website specific class definition
+    # Class representing title of item
+    # <div class="css-1de61eh e25keea13" data-q="tile-title">
+
+    titles = soup.find_all("div", class_="css-1de61eh e25keea13")
+
+    ### UNDER DEVELOPMENT ###
+    #times = soup.find_all("div", class_="css-ntw5lf")
+    #titles = titles.getText
+
+    # Create a list ready to be populated with each individual item listed on Gumtree, for each item.
+    listed_items = []
+    for item in titles:
+        pureitem = item.getText()
+        listed_items.append(pureitem)
+
+    # Put the list in latest descending order. Latest items now appear first on the list:
+    listed_items = list(reversed(listed_items))
+
+    # Search Terms
+    search_terms = re.compile(keywords_transformed, re.IGNORECASE)
+    matching_terms = []
+    # Scanning each item in the listed items found on Gumtree, if it matches one of our search terms, print and append
+    # the found item to "matching_items" list.
+    for item in listed_items:
+        if re.search(search_terms, item):
+            print("A matching term was found on Gumtree Freebies!! Term:")
+            matching_terms.append(item)
+    # If there are any matching_items in the list, print them and return them. If not, return 'No matching items'.
+    # If the function fails to get ANY data (i.e: connectivity issues), return None.
+    if matching_terms:
+        print("The following matching items were found:")
+        print(matching_terms)
+        return matching_terms
+    else:
+        print("No results this time. But the function was run successfully")
+        return 'No matching terms'
+
+
+### SCRIPT ###
+
+# Note start time, calc how long for in mins and number of intervals needed
+
+start_time = time.time()
+how_long_for_mins = how_long_for_hrs*60
+how_many_intervals = (60*how_long_for_mins)/(interval_seconds)
+print("This code will run for "+str(how_many_intervals)+" intervals...")
+print("Starting...")
+
+# For each interval, print the interval no, the time left ETA and run the function for each interval.
+# If gumtreescraper() yields None, re-run the interval again until we get some info.
+for i in range(int(how_many_intervals)):
+    print("Run "+str(i))
+    time_left = how_long_for_mins - (i*(interval_seconds/60))
+    print("Time left ETA: "+str(time_left)+" mins.")
+    time.sleep(interval_seconds)
+    gumtreescraper()
+    while gumtreescraper() == None:
+        print("Retrying, there were connectivity issues..")
+        time.sleep(5)
+        gumtreescraper()
+        print("Re-run "+str(i))
+
+
+
+ ### Under Development ###
+# Class representing TIME posted ago, AFTER title div class
+# <div class="css-ntw5lf" data-q="tile-datePosted">
+# X mins ago
+# </div>
